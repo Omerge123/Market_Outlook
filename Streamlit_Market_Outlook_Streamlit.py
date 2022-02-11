@@ -134,46 +134,56 @@ plt.gcf().autofmt_xdate()
 st.pyplot(fig=plt)
 
 
-def chart_stock(select_stock, period):
-    
+def chart_stock(select_stock1, select_stock2, period, secondary):
+
     lists = {'1mth'  :20, 
              '2mth'  :60,
              '6mth'  :120,
              '1yr'   :260,
              '3yr'   :780,
-             '5yr'   :1300 }
+             '5yr'   :1300 }    
+    
 
-    df_indice_chart_x = df_indice_chart.loc[df_indice_chart['Name'] == select_stock]
-    
-    df_indice_chart_x = df_indice_chart_x.tail(lists[period])
-    
-    min = df_indice_chart_x['Adj Close'].min()
-    max = df_indice_chart_x['Adj Close'].max()
-    
-    chart = alt.Chart(df_indice_chart_x, title=select_stock, ).mark_line().transform_fold(
-    fold=['Adj Close'], 
-    as_=['variable', 'value']
-    ).encode(
-    x=alt.X('Date:T',title='',  axis=alt.Axis(format='%e %b, %Y') ), 
-    y=alt.Y('value:Q',title='', scale=alt.Scale(domain=[min, max]) ),
-   # color=alt.Color('variable:N', legend=alt.Legend(title=''), ),
-    color=alt.Color('variable:N', legend=None, ),
+    limit1 = df_indice_chart.loc[df_indice_chart['Name'] == select_stock1] 
+    period_1 = limit1.tail(lists[period])
+    min1 = period_1['Adj Close'].min()
+    max1 = period_1['Adj Close'].max()
 
-    tooltip=['Date',alt.Tooltip('Adj Close', format=",.3f" )],
-    ).interactive()
+    limit2 = df_indice_chart.loc[df_indice_chart['Name'] == select_stock2] 
+    period_2 = limit2.tail(lists[period])
+    min2 = period_2['Adj Close'].min()
+    max2 = period_2['Adj Close'].max()
+
+    stock1 =alt.Chart(period_1).mark_line().encode(
+        x=alt.X('Date', axis=alt.Axis( grid=True)),
+        y=alt.Y('Adj Close', axis=alt.Axis(grid=True), title=select_stock1, scale=alt.Scale(domain=[min1, max1]) ),
+        color=alt.Color('Name', title=None),
+        tooltip=['Date',alt.Tooltip('Adj Close', format=",.3f" )]).interactive() 
+
+    stock2=alt.Chart(period_2).mark_line().encode(
+        x=alt.X('Date', axis=alt.Axis( grid=True)),
+        y=alt.Y('Adj Close', axis=alt.Axis(grid=True), title=select_stock2, scale=alt.Scale(domain=[min2, max2]) ),
+        color=alt.Color('Name', title=None, ),
+        tooltip=['Date',alt.Tooltip('Adj Close', format=",.3f" )]).interactive() 
+
+    if secondary == 'No' :
+        chart = alt.layer(stock1).resolve_scale(y='independent')
+    else :
+        chart = alt.layer(stock1, stock2).resolve_scale(y='independent')
     
     st.altair_chart(chart, use_container_width=True)
-    
-   # return chart
+    #return chart
  
-
 
 period_choose = ['1mth', '2mth', '6mth', '1yr', '3yr', '5yr']
 stock_choose  = indices_full_name['indices_full_name'].values.tolist()
 
 #st.sidebar.markdown('Chart')
-period_selection = st.selectbox('Selection',period_choose)
-stock_selection  = st.selectbox('Selection',stock_choose)
+period_selection = st.selectbox('Period',period_choose)
+stock_selection1  = st.selectbox('Primary',stock_choose)
+stock_selection2  = st.selectbox('Secondary',stock_choose)
 
+axis = st.radio("Secondary Axis",('Yes', 'No' ))
     
-chart_stock(stock_selection, period_selection)
+chart_stock(stock_selection1, stock_selection2 ,period_selection, axis)
+
