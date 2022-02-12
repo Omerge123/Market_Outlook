@@ -157,13 +157,13 @@ def chart_stock(select_stock1, select_stock2, period, secondary):
     stock1 =alt.Chart(period_1).mark_line().encode(
         x=alt.X('Date', axis=alt.Axis( grid=True)),
         y=alt.Y('Adj Close', axis=alt.Axis(grid=True), title=select_stock1, scale=alt.Scale(domain=[min1, max1]) ),
-        color=alt.Color('Name', title=None),
+        color=alt.Color('Name', title=None, legend=alt.Legend(orient='none', direction='horizontal',titleAnchor='middle')),
         tooltip=['Date',alt.Tooltip('Adj Close', format=",.3f" )]).interactive() 
 
     stock2=alt.Chart(period_2).mark_line().encode(
         x=alt.X('Date', axis=alt.Axis( grid=True)),
         y=alt.Y('Adj Close', axis=alt.Axis(grid=True), title=select_stock2, scale=alt.Scale(domain=[min2, max2]) ),
-        color=alt.Color('Name', title=None, ),
+        color=alt.Color('Name', title=None, legend=alt.Legend(orient='none', direction='horizontal',titleAnchor='middle')),
         tooltip=['Date',alt.Tooltip('Adj Close', format=",.3f" )]).interactive() 
 
     if secondary == 'No' :
