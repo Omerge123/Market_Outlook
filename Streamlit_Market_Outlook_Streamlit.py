@@ -136,9 +136,14 @@ st.pyplot(fig=plt)
 
 def chart_stock(select_stock1, select_stock2, period, secondary):
 
+    #YTD proxy
+    YTD = df_indice_chart.loc[df_indice_chart['Name'] == 'Straits_Time'] 
+    days = len(YTD[YTD.Year == YTD['Year'].max()])
+    
     lists = {'1mth'  :20, 
              '2mth'  :60,
              '6mth'  :120,
+             'YTD'   :days,
              '1yr'   :260,
              '3yr'   :780,
              '5yr'   :1300 }    
@@ -175,7 +180,7 @@ def chart_stock(select_stock1, select_stock2, period, secondary):
     #return chart
  
 
-period_choose = ['1mth', '2mth', '6mth', '1yr', '3yr', '5yr']
+period_choose = ['1mth', '2mth', '6mth','YTD', '1yr', '3yr', '5yr']
 stock_choose  = indices_full_name['indices_full_name'].values.tolist()
 
 #st.sidebar.markdown('Chart')
