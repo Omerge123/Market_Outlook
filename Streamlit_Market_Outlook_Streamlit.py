@@ -192,3 +192,116 @@ axis = st.radio("Secondary Axis",('Yes', 'No' ))
     
 chart_stock(stock_selection1, stock_selection2 ,period_selection, axis)
 
+########################## SG Reits ##############
+
+############ pull back from google ############
+#sheet_id=st.secrets.db_credentials.password
+
+
+df_reits_table   = "https://docs.google.com/spreadsheets/d/" + sheet_id +  "/gviz/tq?tqx=out:csv&sheet=" +  'df_reits_table'
+df_reits_chart   = "https://docs.google.com/spreadsheets/d/" + sheet_id +  "/gviz/tq?tqx=out:csv&sheet=" +  'df_reits_chart'
+reits_full_name  = "https://docs.google.com/spreadsheets/d/" + sheet_id +  "/gviz/tq?tqx=out:csv&sheet=" +  'reits_full_name'
+
+df_reits_table = pd.read_csv(df_reits_table)
+df_reits_chart = pd.read_csv(df_reits_chart)
+reits_full_name = pd.read_csv(reits_full_name)
+
+#convert date to right format##
+df_reits_chart['Date']   = pd.to_datetime(df_reits_chart['Date'].str[:10], errors='ignore')
+
+
+# Title the app
+st.subheader('SG Reits') 
+
+#### dataframe ###
+
+#################################################################
+
+def color_negative_red(value):
+    if value < 0:
+        color = 'red'
+    elif value > 0:
+        color = 'green'
+    else:
+        color = 'black'
+    return 'color: %s' % color
+
+
+def color_recommend(s):
+    return np.where(s.eq('SELL'),'background-color: Salmon',
+                    np.where(s.eq('BUY'),'background-color: YellowGreen',''))
+
+
+cell_hover = {  # for row hover use <tr> instead of <td>
+    'selector': 'td:hover',
+    'props': [('background-color', '#ffffb3')]}
+
+border = {'selector' : '',
+           'props' : [('border', '1px solid green')]}
+
+#header = {'selector': 'th', 'props': [('font-size', '10pt')]}
+#header = {'selector': 'th', 'props': [('background-color', 'LightSalmon')]}
+
+st.dataframe((df_reits_table.style
+.applymap(color_negative_red, subset=['Yest%','Adj_Slope_6month'])
+.format({'Yest%': "{:.3}",
+             'Adj_Slope_6month': "{:.3}", 
+             'Close': "{:.3}", 
+             'Coming_Div%': "{:.3}", 
+             'Collected_Div%': "{:.3}", 
+             'Last_yr_Div%': "{:.3}", 
+            })
+.set_table_styles([border])
+.hide_index()
+))
+
+stock_reits_choose  = reits_full_name['ticker_full_name'].values.tolist()
+period_reits_choose = ['5day','7day','10day','2mth','6mth','YTD','1yr','3yr','5yr']
+
+stock_reits_selection  = st.selectbox('Reits',stock_reits_choose)
+period_reits_selection = st.selectbox('Reits_Period',period_reits_choose)
+
+
+def chart_reits(reits_choose, reits_period):
+    
+    df_reits_chart2 = df_reits_chart.loc[df_reits_chart['Name'] == reits_choose]
+    
+    days = len(df_reits_chart2[df_reits_chart2.Year == df_reits_chart2['Year'].max()])
+    
+    lists = {'5day' :5, 
+             '7day' :7,
+             '10day':10,
+             '2mth' :40,
+             '6mth' :120,
+             'YTD'  :days,
+             '1yr'  :260,
+             '3yr'  :780,
+             '5yr'  :1300 } 
+    
+    df_reits_chart3 = df_reits_chart2.tail(lists[reits_period])
+    
+    min = df_reits_chart3['Close'].min()
+    max = df_reits_chart3['Close'].max()
+    
+    scale  = alt.Scale(domain=['Close', 'SMA_50', 'SMA_100', 'SMA_200' ], range=['#606060', 'Orange', 'SkyBlue', 'DarkSeaGreen'])
+
+    chart = alt.Chart(df_reits_chart3, title=reits_choose).mark_line(strokeDash=[5, 10]).transform_fold(
+    fold=['Close', 'SMA_50', 'SMA_100', 'SMA_200'], 
+    as_=['variable', 'value']
+    ).encode(
+    x=alt.X('Date:T',title='',  axis=alt.Axis(format='%e %b, %Y') ), 
+    y=alt.Y('value:Q',title='', scale=alt.Scale(domain=[min, max]) ),
+    color=alt.Color('variable:N', scale=scale, legend=alt.Legend(title='')),
+
+    tooltip=['Date',alt.Tooltip('Close', format=",.3f" )],
+    strokeDash=alt.condition(
+        alt.datum.variable == 'Close',
+        alt.value([0]),  # solid line
+        alt.value([5,5]), )  # dashed line: 5 pixels  dash + 5 pixels space
+            ).interactive()
+    
+    #return chart 
+    st.altair_chart(chart, use_container_width=True)
+    
+chart_reits(stock_reits_selection, period_reits_selection)
+
