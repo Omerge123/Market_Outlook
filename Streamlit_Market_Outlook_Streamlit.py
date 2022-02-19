@@ -141,7 +141,7 @@ def chart_stock(select_stock1, select_stock2, period, secondary):
     days = len(YTD[YTD.Year == YTD['Year'].max()])
     
     lists = {'1mth'  :20, 
-             '2mth'  :60,
+             '2mth'  :40,
              '6mth'  :120,
              'YTD'   :days,
              '1yr'   :260,
