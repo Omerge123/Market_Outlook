@@ -192,5 +192,66 @@ axis = st.radio("Secondary Axis",('Yes', 'No' ))
     
 chart_stock(stock_selection1, stock_selection2 ,period_selection, axis)
 
+########################## SG Reits ##############
 
+############ pull back from google ############
+#sheet_id=st.secrets.db_credentials.password
+
+
+df_reits_table   = "https://docs.google.com/spreadsheets/d/" + sheet_id +  "/gviz/tq?tqx=out:csv&sheet=" +  'df_reits_table'
+df_reits_chart   = "https://docs.google.com/spreadsheets/d/" + sheet_id +  "/gviz/tq?tqx=out:csv&sheet=" +  'df_reits_chart'
+reits_full_name  = "https://docs.google.com/spreadsheets/d/" + sheet_id +  "/gviz/tq?tqx=out:csv&sheet=" +  'reits_full_name'
+
+df_reits_table = pd.read_csv(df_reits_table)
+df_reits_chart = pd.read_csv(df_reits_chart)
+reits_full_name = pd.read_csv(reits_full_name)
+
+#convert date to right format##
+df_reits_chart['Date']   = pd.to_datetime(df_reits_chart['Date'].str[:10], errors='ignore')
+
+
+# Title the app
+st.subheader('SG Reits') 
+
+#### dataframe ###
+
+#################################################################
+
+def color_negative_red(value):
+    if value < 0:
+        color = 'red'
+    elif value > 0:
+        color = 'green'
+    else:
+        color = 'black'
+    return 'color: %s' % color
+
+
+def color_recommend(s):
+    return np.where(s.eq('SELL'),'background-color: Salmon',
+                    np.where(s.eq('BUY'),'background-color: YellowGreen',''))
+
+
+cell_hover = {  # for row hover use <tr> instead of <td>
+    'selector': 'td:hover',
+    'props': [('background-color', '#ffffb3')]}
+
+border = {'selector' : '',
+           'props' : [('border', '1px solid green')]}
+
+#header = {'selector': 'th', 'props': [('font-size', '10pt')]}
+#header = {'selector': 'th', 'props': [('background-color', 'LightSalmon')]}
+
+st.dataframe((df_reits_table.style
+.applymap(color_negative_red, subset=['Yest%','Adj_Slope_6month'])
+.format({'Yest%': "{:.3}",
+             'Adj_Slope_6month': "{:.3}", 
+             'Close': "{:.3}", 
+             'Coming_Div%': "{:.3}", 
+             'Collected_Div%': "{:.3}", 
+             'Last_yr_Div%': "{:.3}", 
+            })
+.set_table_styles([border])
+.hide_index()
+))
 
