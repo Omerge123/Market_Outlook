@@ -255,3 +255,52 @@ st.dataframe((df_reits_table.style
 .hide_index()
 ))
 
+stock_reits_choose  = reits_full_name['ticker_full_name'].values.tolist()
+period_reits_choose = ['5day','7day','10day','2mth','6mth','YTD','1yr','3yr','5yr']
+
+stock_reits_selection  = st.selectbox('Reits',stock_reits_choose)
+period_reits_selection = st.selectbox('Reits_Period',period_reits_choose)
+
+
+def chart_reits(reits_choose, reits_period):
+    
+    df_reits_chart2 = df_reits_chart.loc[df_reits_chart['Name'] == reits_choose]
+    
+    days = len(df_reits_chart2[df_reits_chart2.Year == df_reits_chart2['Year'].max()])
+    
+    lists = {'5day' :5, 
+             '7day' :7,
+             '10day':10,
+             '2mth' :40,
+             '6mth' :120,
+             'YTD'  :days,
+             '1yr'  :260,
+             '3yr'  :780,
+             '5yr'  :1300 } 
+    
+    df_reits_chart3 = df_reits_chart2.tail(lists[reits_period])
+    
+    min = df_reits_chart3['Close'].min()
+    max = df_reits_chart3['Close'].max()
+    
+    scale  = alt.Scale(domain=['Close', 'SMA_50', 'SMA_100', 'SMA_200' ], range=['#606060', 'Orange', 'SkyBlue', 'DarkSeaGreen'])
+
+    chart = alt.Chart(df_reits_chart3, title=reits_choose).mark_line(strokeDash=[5, 10]).transform_fold(
+    fold=['Close', 'SMA_50', 'SMA_100', 'SMA_200'], 
+    as_=['variable', 'value']
+    ).encode(
+    x=alt.X('Date:T',title='',  axis=alt.Axis(format='%e %b, %Y') ), 
+    y=alt.Y('value:Q',title='', scale=alt.Scale(domain=[min, max]) ),
+    color=alt.Color('variable:N', scale=scale, legend=alt.Legend(title='')),
+
+    tooltip=['Date',alt.Tooltip('Close', format=",.3f" )],
+    strokeDash=alt.condition(
+        alt.datum.variable == 'Close',
+        alt.value([0]),  # solid line
+        alt.value([5,5]), )  # dashed line: 5 pixels  dash + 5 pixels space
+            ).interactive()
+    
+    #return chart 
+    st.altair_chart(chart, use_container_width=True)
+    
+chart_reits(stock_reits_selection, period_reits_selection)
