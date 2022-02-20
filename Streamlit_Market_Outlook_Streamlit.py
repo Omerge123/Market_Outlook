@@ -283,7 +283,7 @@ def chart_reits(reits_choose, reits_period):
     min = df_reits_chart3['Close'].min()
     max = df_reits_chart3['Close'].max()
     
-    scale  = alt.Scale(domain=['Close', 'SMA_50', 'SMA_100', 'SMA_200' ], range=['#606060', 'Orange', 'SkyBlue', 'DarkSeaGreen'])
+    scale  = alt.Scale(domain=['Close', 'SMA_50', 'SMA_100', 'SMA_200' ], range=['#5681c7', 'Orange', 'SkyBlue', 'DarkSeaGreen'])
 
     chart = alt.Chart(df_reits_chart3, title=reits_choose).mark_line(strokeDash=[5, 10]).transform_fold(
     fold=['Close', 'SMA_50', 'SMA_100', 'SMA_200'], 
