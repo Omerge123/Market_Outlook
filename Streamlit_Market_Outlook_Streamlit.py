@@ -255,6 +255,8 @@ st.dataframe((df_reits_table.style
 .hide_index()
 ))
 
+st.text('*Day for Dividend refer to Ex-date')
+
 stock_reits_choose  = reits_full_name['ticker_full_name'].values.tolist()
 period_reits_choose = ['5day','7day','10day','2mth','6mth','YTD','1yr','3yr','5yr']
 
